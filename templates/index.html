@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AI News Intelligent Summarizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile {
+            width: 40px;
+            height: 40px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+
+        /* --- Main Content --- */
+        main {
+            flex: 1;
+            max-width: 900px;
+            width: 90%;
+            margin: 3rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* --- Search Area --- */
+        .search-section {
+            text-align: center;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: -webkit-linear-gradient(45deg, var(--primary), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            background: var(--card-bg);
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .input-group:focus-within {
+            transform: scale(1.01);
+            border-color: var(--primary);
+        }
+
+        .input-group input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 50px;
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { background: var(--secondary); cursor: not-allowed; }
+
+        /* --- Controls (Summary Length) --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn.active {
+            background: #dbeafe;
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* --- Result Card --- */
+        .result-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: none; /* Hidden by default */
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: none;
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        .meta-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background: #f1f5f9;
+            color: var(--secondary);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .summary-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #334155;
+            margin-bottom: 2rem;
+            white-space: pre-line;
+        }
+
+        /* --- Action Bar --- */
+        .action-bar {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .audio-player {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .play-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-trigger {
+            color: var(--primary);
+            background: #eff6ff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .chat-trigger:hover { background: #dbeafe; }
+
+        /* --- Loader --- */
+        .loader-container {
+            text-align: center;
+            padding: 3rem;
+            display: none;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Floating Chat Button --- */
+        .floating-chat {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .floating-chat:hover { transform: scale(1.1); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-layer-group"></i>
+            AI News Summarizer
+        </div>
+        <div class="user-profile">
+            <i class="fa-regular fa-user"></i>
+        </div>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <h1>Stay Informed, Instantly.</h1>
+            <p class="subtitle">Paste any article link below to get an AI-generated summary and audio briefing.</p>
+            
+            <div class="input-group">
+                <input type="text" id="urlInput" placeholder="https://www.bbc.com/news/article...">
+                <button class="btn-primary" onclick="processNews()">
+                    <span>Summarize</span>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="option-btn active" onclick="setLength('short', this)">Short</button>
+                <button class="option-btn" onclick="setLength('medium', this)">Medium</button>
+                <button class="option-btn" onclick="setLength('detail', this)">Detailed</button>
+            </div>
+        </section>
+
+        <div class="loader-container" id="loader">
+            <div class="spinner"></div>
+            <p>Extracting content and generating audio...</p>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <img id="articleImage" class="card-image" src="" alt="News Header">
+            
+            <div class="card-content">
+                <div class="meta-tags">
+                    <span class="tag" id="dateTag">Today</span>
+                    <span class="tag">Technology</span>
+                    <span class="tag">AI Generated</span>
+                </div>
+                
+                <h2 class="card-title" id="articleTitle">Result Title Goes Here</h2>
+                
+                <div class="summary-text" id="articleBody">
+                    This is where the extracted text or summary will appear. It is designed to be easy to read with comfortable line height and spacing.
+                </div>
+
+                <div class="action-bar">
+                    <div class="audio-player">
+                        <button class="play-btn" onclick="toggleAudio()">
+                            <i class="fa-solid fa-play" id="playIcon"></i>
+                        </button>
+                        <div style="font-size: 0.9rem; color: var(--secondary);">
+                            <span id="audioStatus">Listen to Summary</span>
+                        </div>
+                    </div>
+
+                    <button class="chat-trigger" onclick="openChat()">
+                        <i class="fa-regular fa-comments"></i>
+                        Ask Follow-up
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="floating-chat" onclick="openChat()">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <script>
+        // --- State Variables ---
+        let currentLength = 'short';
+        let isPlaying = false;
+
+        // --- UI Logic ---
+        function setLength(length, btn) {
+            currentLength = length;
+            // Update active visual state
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function processNews() {
+            const url = document.getElementById('urlInput').value;
+            const loader = document.getElementById('loader');
+            const resultCard = document.getElementById('resultCard');
+
+            if (!url) {
+                alert("Please paste a valid URL first.");
+                return;
+            }
+
+            // UI Transitions
+            resultCard.style.display = 'none';
+            loader.style.display = 'block';
+
+            try {
+                // --- API CALL (Connected to Flask) ---
+                const response = await fetch('/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // --- Populate Data ---
+                document.getElementById('articleTitle').innerText = data.title;
+                document.getElementById('articleBody').innerText = data.text; // Currently displays full text (Sprint 1)
+                
+                // Handle Image
+                const img = document.getElementById('articleImage');
+                if (data.image) {
+                    img.src = data.image;
+                    img.style.display = 'block';
+                } else {
+                    img.style.display = 'none';
+                }
+
+                // Show Result
+                loader.style.display = 'none';
+                resultCard.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                loader.style.display = 'none';
+                alert("Error fetching news: " + error.message);
+            }
+        }
+
+        function toggleAudio() {
+            const btn = document.getElementById('playIcon');
+            const label = document.getElementById('audioStatus');
+            
+            if(!isPlaying) {
+                // Simulate playing
+                btn.classList.remove('fa-play');
+                btn.classList.add('fa-pause');
+                label.innerText = "Playing Audio...";
+                isPlaying = true;
+                // Actual Audio Logic will go here in Sprint 2
+            } else {
+                btn.classList.remove('fa-pause');
+                btn.classList.add('fa-play');
+                label.innerText = "Listen to Summary";
+                isPlaying = false;
+            }
+        }
+
+        function openChat() {
+            alert("");
+        }
+    </script>
+</body>
+</html>
