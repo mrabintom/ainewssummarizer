@@ -1,0 +1,9 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+requests
+transformers
+torch
+beautifulsoup4
+newspaper3k
+werkzeug
